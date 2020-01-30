@@ -68,7 +68,7 @@ data:
   entrypoint.sh: |+
     #!/usr/bin/env bash
     source ~/.bashrc
-    mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC19pnyt2y8i0rqqxkcjpleI3JV5FkHAJ2y4tRuIbehzn/dBzfbw9ksP0AlH+EIfl51YY7patYAROLfBmM5POeUzVYagwIVPLpENnxibGBZucLaieyvs69J1urneov3D3dPzgWCKW1zBpKVmLbcNBzgm2v8dyybbHOkYuutYTnE8S3TNuBEO2hhkuB/0Bd2XO7ftSyPGJkFcr4d0TODvq0dLE1VOEhm2Vyp0E8VMZFMXaxRuabP4tGSNgk9e4x+3rUD3Uo8bBFXCA7oKqU9o4sF3ajlasqTt6fCtxhlm2vAhgo/DAsDqLcvKXyRT+3iHGxp2THKu5JbplfsJ5uPXBrB user@ericssonsics1-deploy-test-5d7bcc894-m8f68" >> ~/.ssh/authorized_keys
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && echo "ssh-rsa aaaa user@ericssonsics1-deploy-test-5d7bcc894-m8f68" >> ~/.ssh/authorized_keys
     sudo sed -i 's/^UsePAM .*/UsePAM no/' /etc/ssh/sshd_config
     sudo service ssh restart
     sudo service ssh status
