@@ -12,7 +12,7 @@ E=fromfile('10', sep='\n')
 # X=fromfile('/home/user/data2', sep='\n')
 # Y=fromfile('/home/user/data', sep='\n')
 
-Z=fromfile('standalone', sep='\n')
+Z=fromfile('K8s', sep='\n')
 # hist(G,bins=10000, density=True, cumulative=True,
 #          histtype='step', label="30 ms")
 
