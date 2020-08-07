@@ -1,0 +1,111 @@
+#!/bin/bash
+
+threshold=$1 #E.g. ~/Ericsson-SICS-SDR/
+setup=$2
+channel=$3
+tag=$4
+
+if [[ "$setup" == "UDP" ]]; then
+    echo "Using the UDP setup"
+
+elif [[ "$setup" == "RSSI_filter" ]]; then
+    echo "Using the RSSI setup"
+
+elif [[ "$setup" == "Squelch" ]]; then
+    echo "Using the Squelch setup"
+fi
+
+
+#docker_image=wirstrom/zero
+# docker_image=ericssonsics/5g-coral
+docker_image=ericssonsics/5g-coral:$tag
+docker_netname=iotgw-net
+docker_subnet=172.2.0.0
+
+radiohead=172.2.0.3
+radioheadex=10.68.226.239
+#edge=x.x.x.x #master
+# edge=x.x.x.x #node2
+edge=x.x.x.x  #node1
+echo "here"
+
+
+#ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 "sudo pkill -f iot"
+#ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 "sudo pkill -f jar"
+echo "there"
+
+docker kill sics-radiohead
+docker kill sics-edge
+
+
+docker network rm $docker_netname
+docker network create --subnet=$docker_subnet/16 $docker_netname
+
+# # tmp_dst=/tmp/Ericsson-SICS-SDR
+# ./prepare_coral_path.sh $srcdir $tmp_dst
+# # mount_opt="-v $tmp_dst:/home/user/Ericsson-SICS-SDR"
+here=$(dirname $0)
+echo $here
+
+$here/docker-setup-sshd.sh $docker_image sics-radiohead  $radiohead #"$mount_opt"
+#$here/docker-setup-sshd2.sh $docker_image sics-edge $edge #"$mount_opt"
+
+# dokcer  exec -ti sics-radiohead bash -c "source pybombs"
+# docker  exec -ti sics-radiohead bash -c "make -C Ericsson-SICS-SDR/iot-gw"
+# docker  exec -ti sics-edge bash -c "make -C Ericsson-SICS-SDR/iot-gw"
+
+session=5gCoral
+window=$session:0
+
+tmux  new-session -d -s $session
+
+if [[ "$setup" != "nbiot" ]]; then
+    # Setup a window for tailing log files
+    tmux new-window -t $window -n "$window"
+    tmux select-window -t $window
+    tmux split-window -h
+    tmux split-window -v -t left
+    tmux split-window -v -t right
+    tmux split-window -v -t bottom-right
+
+ #   tmux select-pane -t left
+ #   if [[ "$setup" == "UDP" ]]; then
+ #       tmux send-keys "ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 \"python -u Ericsson-SICS-SDR/iot-gw/common/setter_wrapper.py iot-gw/bin/iotgw_upper_udp.iotgw_upper_udp --lower-host=$radioheadex\"" Enter
+  #  else
+  #      tmux send-keys "ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 \"python -u Ericsson-SICS-SDR/iot-gw/common/setter_wrapper.py iot-gw/bin/iotgw_upper.iotgw_upper --lower-host=$radioheadex\"" Enter
+  #  fi
+
+    tmux select-pane -t bottom-left
+    if [[ "$setup" == "UDP" ]]; then
+        tmux send-keys "ssh user@$radiohead \"python -u Ericsson-SICS-SDR/iot-gw/common/setter_wrapper.py iot-gw/bin/iotgw_usrp_lower_udp.iotgw_usrp_lower_udp --upper-host=$edge --base-channel=$channel --Threshold=$threshold\"" Enter
+
+    elif [[ "$setup" == "RSSI_filter" ]]; then
+        tmux send-keys "ssh user@$radiohead \"python -u Ericsson-SICS-SDR/iot-gw/common/setter_wrapper.py iot-gw/bin/iotgw_usrp_lower.iotgw_usrp_lower --upper-host=$edge --base-channel=$channel\"" Enter
+
+    elif [[ "$setup" == "Squelch" ]]; then
+        tmux send-keys "ssh user@$radiohead \"python -u Ericsson-SICS-SDR/iot-gw/common/setter_wrapper.py iot-gw/bin/iotgw_usrp_lower_squelch.iotgw_usrp_lower_squelch --upper-host=$edge --base-channel=$channel --Threshold=$threshold\"" Enter
+    fi
+
+  #  tmux select-pane -t top-right
+  #  tmux send-keys "ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 java -jar ./leshan-server-demo.jar" Enter
+
+  #  tmux select-pane -D
+  #  tmux send-keys "ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 demo-eucnc/cng-iot-gw.sh" Enter
+
+else
+    tmux new-window -t $window -n "$window"
+    tmux select-window -t $window
+    tmux split-window -h
+
+   # tmux select-pane -t left
+
+   # tmux send-keys "ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 \"python -u Ericsson-SICS-SDR/gr-nbiot/apps/edge.py --ip=$edge\"" Enter
+
+    tmux select-pane -t right
+
+    tmux send-keys "ssh -X user@$radiohead \"gnuradio-companion\"" Enter
+fi
+
+
+tmux attach-session -t $session
+
