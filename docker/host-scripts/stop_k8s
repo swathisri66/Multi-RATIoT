@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+#docker_image=wirstrom/zero
+# docker_image=ericssonsics/5g-coral
+docker_image=ericssonsics/5g-coral:$tag
+docker_netname=iotgw-net
+docker_subnet=172.2.0.0
+
+radiohead=172.2.0.3
+radioheadex=10.x.x.x
+edge=136.x.x.x
+#echo "here"
+
+
+ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 "sudo pkill -f iot"
+ssh -i /home/receiver/coral/coralkey.pem user@$edge -p 32122 "sudo pkill -f jar"
+echo "service on k8s stopped"
+
+docker kill sics-radiohead
+docker kill sics-edge
+
+
+docker network rm $docker_netname
+echo "local containers stopped"
