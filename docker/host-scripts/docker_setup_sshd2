@@ -1,0 +1,25 @@
+image=$1
+name=$2
+docker_ip=$3
+docker_args=$4
+
+
+#docker pull $image
+docker stop $name 2> /dev/null
+docker rm $name 2> /dev/null
+#
+#echo docker run -d --hostname $name -p 53002:53002 --name $name --network host --privileged $docker_args -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/bus/usb:/dev/bus/usb --net iotgw-net --ip $docker_ip --ulimit rtprio=99 --cap-add=sys_nice -ti $image
+#docker run -d --hostname $name -p 53002:53002 --name $name  --network host --privileged $docker_args -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/bus/usb:/dev/bus/usb --net iotgw-net --ip $docker_ip --ulimit rtprio=99 --cap-add=sys_nice -ti $image
+
+echo docker run -d --hostname $name -p 53002:53002 --name $name --network host --privileged $docker_args -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net iotgw-net --ip $docker_ip --ulimit rtprio=99 --cap-add=sys_nice -ti $image
+docker run -d --hostname $name -p 53002:53002 --name $name  --network host --privileged $docker_args -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --net iotgw-net --ip $docker_ip --ulimit rtprio=99 --cap-add=sys_nice -ti $image
+
+
+docker exec $name mkdir --mode=700 /home/user/.ssh
+for f in ~/.ssh/authorized_keys* ; do
+    docker cp $f $name:/home/user/.ssh/
+    docker exec $name sudo chown user .ssh/$(basename $f)
+done
+
+docker exec $name sudo sed -i 's/^UsePAM .*/UsePAM no/' /etc/ssh/sshd_config
+docker exec $name sudo service ssh restart 2> /dev/null
