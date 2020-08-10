@@ -23,7 +23,7 @@ docker_netname=iotgw-net
 docker_subnet=172.2.0.0
 
 radiohead=172.2.0.3
-radioheadex=10.68.226.239
+radioheadex=10.x.x.x
 #edge=x.x.x.x #master
 # edge=x.x.x.x #node2
 edge=x.x.x.x  #node1
